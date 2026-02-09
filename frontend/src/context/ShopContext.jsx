@@ -1,58 +1,47 @@
 import { createContext, useEffect, useState } from "react";
-// import { products } from "../assets/assets"; // इसे अब हम इस्तेमाल नहीं करेंगे
 import { toast } from "react-toastify";
 import { useNavigate } from "react-router-dom";
-import axios from "axios"; // Axios को इम्पोर्ट करना न भूलें
+import axios from "axios";
 
 export const ShopContext = createContext();
 
-const ShopContextProvider = (props) => {
-  const [products, setProducts] = useState([]); // अब प्रोडक्ट्स का डेटा स्टेट में रहेगा
+const ShopContextProvider = ({ children }) => {
+  // basic states
+  const [products, setProducts] = useState([]);
   const [search, setSearch] = useState("");
   const [cartItems, setCartItems] = useState({});
-  const [orders, setOrders] = useState([]); // new
+  const [orders, setOrders] = useState([]);
 
   const navigate = useNavigate();
 
-  // .env से Backend URL ले रहे हैं
-  const backendUrl = import.meta.env.VITE_BACKEND_URL; 
+  // constants
+  const backendUrl = import.meta.env.VITE_BACKEND_URL;
   const currency = "₹";
   const delivery_fee = 10;
 
-  // --- Backend से प्रोडक्ट्स लाने का फंक्शन ---
+  /* ---------------- PRODUCTS ---------------- */
+
   const getProductsData = async () => {
     try {
-      const response = await axios.get(backendUrl + "/api/product/list");
-      console.log('API Response:', response.data);
-      if (response.data.success) {
-        // normalize: ensure imageUrl exists and is absolute (prefix backendUrl for relative paths)
-        const normalized = (response.data.products || []).map(p => {
-          const raw = p.imageUrl || p.image || "";
-          let imageUrl = raw || "";
-          try {
-            if (imageUrl && !/^https?:\/\//i.test(imageUrl)) {
-              // make absolute using backendUrl if available
-              const base = backendUrl ? backendUrl.replace(/\/$/, "") : "";
-              if (base) {
-                imageUrl = imageUrl.startsWith("/") ? `${base}${imageUrl}` : `${base}/${imageUrl}`;
-              }
-            }
-          } catch (e) {
-            imageUrl = raw || "";
-          }
-          return {
-            ...p,
-            imageUrl
-          };
-        });
-        setProducts(normalized);
-      } else {
-        console.error('API Error:', response.data.message);
-        toast.error(response.data.message || "Failed to load products");
+      const res = await axios.get(`${backendUrl}/api/product/list`);
+
+      if (!res.data?.success) {
+        toast.error("Products load failed");
+        return;
       }
-    } catch (error) {
-      console.error('API Call Error:', error.message);
-      toast.error("Server se डेटा लोड नहीं हो पाया - Check Backend");
+
+      // make imageUrl safe
+      const normalized = res.data.products.map((p) => {
+        let imageUrl = p.imageUrl || p.image || "";
+        if (imageUrl && !imageUrl.startsWith("http")) {
+          imageUrl = `${backendUrl}${imageUrl.startsWith("/") ? "" : "/"}${imageUrl}`;
+        }
+        return { ...p, imageUrl };
+      });
+
+      setProducts(normalized);
+    } catch {
+      toast.error("Backend not responding");
     }
   };
 
@@ -60,125 +49,80 @@ const ShopContextProvider = (props) => {
     getProductsData();
   }, [backendUrl]);
 
-  // ------------------------------------------
+  /* ---------------- CART STORAGE ---------------- */
 
-  // read stored cart safely
+  // load cart from localStorage
   useEffect(() => {
     try {
-      const stored = localStorage.getItem("cartItems");
-      if (stored) setCartItems(JSON.parse(stored));
-    } catch (e) {
-      localStorage.removeItem("cartItems");
+      const stored = JSON.parse(localStorage.getItem("cartItems") || "{}");
+      setCartItems(stored);
+    } catch {
       setCartItems({});
     }
   }, []);
 
-  // clear cart on logout event
-  useEffect(() => {
-    const onLogout = () => {
-      setCartItems({});
-      localStorage.removeItem("cartItems");
-    };
-    window.addEventListener("logout", onLogout);
-    return () => window.removeEventListener("logout", onLogout);
-  }, []);
-
+  // save cart
   useEffect(() => {
     localStorage.setItem("cartItems", JSON.stringify(cartItems));
   }, [cartItems]);
 
-  // load orders on mount (try backend, then fallback to localStorage)
+  /* ---------------- ORDERS ---------------- */
+
   useEffect(() => {
     const loadOrders = async () => {
       try {
-        if (backendUrl) {
-          const token = localStorage.getItem("token") || "";
-          const res = await axios.get(`${backendUrl}/api/order/user`, {
-            headers: token ? { Authorization: `Bearer ${token}` } : {},
-          });
-          if (res.data?.success && Array.isArray(res.data.orders)) {
-            setOrders(res.data.orders);
-            localStorage.setItem("orders", JSON.stringify(res.data.orders));
-            return;
-          }
+        const token = localStorage.getItem("token") || "";
+        const res = await axios.get(`${backendUrl}/api/order/user`, {
+          headers: token ? { Authorization: `Bearer ${token}` } : {},
+        });
+
+        if (res.data?.success) {
+          setOrders(res.data.orders);
+          localStorage.setItem("orders", JSON.stringify(res.data.orders));
+          return;
         }
-      } catch (e) {
-        // ignore backend error and fallback
-      }
-      try {
-        const local = JSON.parse(localStorage.getItem("orders") || "[]");
-        setOrders(Array.isArray(local) ? local : []);
-      } catch {
-        setOrders([]);
-      }
+      } catch {}
+
+      // fallback
+      const localOrders = JSON.parse(localStorage.getItem("orders") || "[]");
+      setOrders(localOrders);
     };
+
     loadOrders();
   }, [backendUrl]);
 
+  /* ---------------- CART ACTIONS ---------------- */
+
   const addToCart = (itemId, size) => {
-  if (!size) {
-    toast.error("Please select a size");
-    return;
-  }
+    if (!size) return toast.error("Select size first");
 
-  setCartItems((prev) => {
-    const updated = structuredClone(prev);
+    setCartItems((prev) => {
+      const updated = structuredClone(prev);
 
-    // agar product already cart me hai
-    if (updated[itemId]) {
-      // same size hai → quantity badhao
-      if (updated[itemId][size]) {
-        updated[itemId][size] += 1;
-        toast.success("Quantity Increased");
-      } 
-      // new size
-      else {
-        updated[itemId][size] = 1;
-        toast.success("Item Added To Cart");
-      }
-    } 
-    // new product
-    else {
-      updated[itemId] = {
-        [size]: 1,
-      };
-      toast.success("Item Added To Cart");
-    }
+      if (!updated[itemId]) updated[itemId] = {};
+      updated[itemId][size] = (updated[itemId][size] || 0) + 1;
 
-    return updated;
-  });
-};
-
-
-
-  // updateQuantity: if quantity <= 0 remove that size; if no sizes left remove product entry
-  const updateQuantity = async (itemId, size, quantity) => {
-    let cartData = structuredClone(cartItems);
-    if (!cartData[itemId]) return;
-    if (quantity <= 0) {
-      // remove size entry
-      delete cartData[itemId][size];
-      // if no sizes left, remove product
-      if (Object.keys(cartData[itemId] || {}).length === 0) {
-        delete cartData[itemId];
-      }
-      toast.success("Item Removed From The Cart");
-    } else {
-      cartData[itemId][size] = quantity;
-    }
-    setCartItems(cartData);
+      toast.success("Added to cart");
+      return updated;
+    });
   };
 
-  // remove specific size / item
-  const removeFromCart = (itemId, size) => {
-    let cartData = structuredClone(cartItems);
-    if (!cartData[itemId]) return;
-    delete cartData[itemId][size];
-    if (Object.keys(cartData[itemId] || {}).length === 0) {
-      delete cartData[itemId];
+  const updateQuantity = (itemId, size, qty) => {
+    const updated = structuredClone(cartItems);
+
+    if (qty <= 0) {
+      delete updated[itemId][size];
+      if (!Object.keys(updated[itemId]).length) delete updated[itemId];
+      toast.success("Item removed");
+    } else {
+      updated[itemId][size] = qty;
     }
-    setCartItems(cartData);
-    toast.success("Removed from cart");
+
+    setCartItems(updated);
+  };
+
+  const removeFromCart = (itemId, size) => {
+    updateQuantity(itemId, size, 0);
   };
 
   const clearCart = () => {
@@ -186,139 +130,96 @@ const ShopContextProvider = (props) => {
     localStorage.removeItem("cartItems");
   };
 
-  // placeOrder: add individual items to flat orders array
+  /* ---------------- ORDER ACTIONS ---------------- */
+
   const placeOrder = async (orderItems = []) => {
-    const ordersKey = "orders";
-    
-    // flatten: add each item as individual entry with date
-    const newOrderItems = orderItems.map((it) => ({
-      ...it,
-      date: Date.now(), // add order date to each item
+    const itemsWithDate = orderItems.map((i) => ({
+      ...i,
+      date: Date.now(),
     }));
 
-    // try backend if available (optional, fallback to local)
     try {
-      if (backendUrl) {
-        const token = localStorage.getItem("token") || "";
-        await axios.post(`${backendUrl}/api/order/add`, { items: newOrderItems }, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
-      }
-    } catch (err) {
-      // ignore backend errors - continue with local
-    }
+      const token = localStorage.getItem("token") || "";
+      await axios.post(
+        `${backendUrl}/api/order/add`,
+        { items: itemsWithDate },
+        { headers: token ? { Authorization: `Bearer ${token}` } : {} }
+      );
+    } catch {}
 
-    // add to orders state (flat array)
     setOrders((prev) => {
-      const next = [...newOrderItems, ...prev];
-      try { localStorage.setItem(ordersKey, JSON.stringify(next)); } catch {}
+      const next = [...itemsWithDate, ...prev];
+      localStorage.setItem("orders", JSON.stringify(next));
       return next;
     });
 
-    // remove ordered items from cart
-    let cartData = structuredClone(cartItems);
-    for (const it of orderItems) {
-      if (cartData[it.productId]) {
-        delete cartData[it.productId][it.size];
-        if (Object.keys(cartData[it.productId] || {}).length === 0) {
-          delete cartData[it.productId];
-        }
-      }
-    }
-    setCartItems(cartData);
+    clearCart();
     return { success: true };
   };
 
-  // cancel order (state-level + backend attempt)
-  const cancelOrder = async (orderId) => {
-    // remove order locally (optimistic)
+  const cancelItem = (index) => {
     setOrders((prev) => {
-      const next = prev.filter((o) => o._id !== orderId);
-      try { localStorage.setItem("orders", JSON.stringify(next)); } catch {}
+      const next = prev.filter((_, i) => i !== index);
+      localStorage.setItem("orders", JSON.stringify(next));
       return next;
     });
+  };
 
-    // try backend cancel (best-effort)
-    try {
-      if (backendUrl) {
-        const token = localStorage.getItem("token") || "";
-        await axios.patch(`${backendUrl}/api/order/${orderId}/cancel`, {}, {
-          headers: token ? { Authorization: `Bearer ${token}` } : {}
-        });
+  /* ---------------- HELPERS ---------------- */
+
+  const getCartCount = () => {
+    let count = 0;
+    for (const id in cartItems) {
+      for (const size in cartItems[id]) {
+        count += cartItems[id][size];
       }
-    } catch (err) {
-      // ignore backend errors; UI already updated
     }
+    return count;
   };
 
-  // cancelItem: remove item at index from flat orders array
-  const cancelItem = (itemIndex) => {
-    setOrders((prev) => {
-      const next = prev.filter((_, idx) => idx !== itemIndex);
-      try { localStorage.setItem("orders", JSON.stringify(next)); } catch {}
-      return next;
-    });
-  };
-
-const getCartCount = () => {
-  let totalCount = 0;
-
-  for (const productId in cartItems) {
-    for (const size in cartItems[productId]) {
-      totalCount += cartItems[productId][size];
-    }
-  }
-
-  return totalCount;
-};
-
-const isItemInCart = (itemId, size) => {
-  return !!cartItems[itemId]?.[size];
-};
-
+  const isItemInCart = (id, size) => !!cartItems[id]?.[size];
 
   const getCartAmount = () => {
-    let totalAmount = 0;
-    for (const items in cartItems) {
-      let itemInfo = products.find((product) => product._id === items);
-      if (itemInfo) {
-        for (const item in cartItems[items]) {
-          try {
-            if (cartItems[items][item] > 0) {
-              totalAmount += itemInfo.price * cartItems[items][item];
-            }
-          } catch (error) {
-            console.error('Error calculating cart amount:', error);
-          }
-        }
+    let total = 0;
+
+    for (const id in cartItems) {
+      const product = products.find((p) => p._id === id);
+      if (!product) continue;
+
+      for (const size in cartItems[id]) {
+        total += product.price * cartItems[id][size];
       }
     }
-    return totalAmount;
+    return total;
   };
+
+  /* ---------------- CONTEXT VALUE ---------------- */
 
   const value = {
     products,
     currency,
-    isItemInCart,
     delivery_fee,
     search,
     setSearch,
     cartItems,
     addToCart,
-    getCartCount,
     updateQuantity,
     removeFromCart,
     clearCart,
+    getCartCount,
     getCartAmount,
+    isItemInCart,
     placeOrder,
     orders,
-    cancelItem, // exposed
+    cancelItem,
     navigate,
-    backendUrl // इसे भी पास कर रहे हैं ताकि बाकी जगह काम आए
+    backendUrl,
   };
 
   return (
-    <ShopContext.Provider value={value}>{props.children}</ShopContext.Provider>
+    <ShopContext.Provider value={value}>
+      {children}
+    </ShopContext.Provider>
   );
 };
 

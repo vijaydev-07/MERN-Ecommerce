@@ -1,28 +1,32 @@
-import React, { createContext, useEffect, useState } from "react";
+import { createContext, useEffect, useState } from "react";
 import axios from "axios";
 
 export const AuthContext = createContext();
 
 export const AuthProvider = ({ children }) => {
-  const backendUrl = import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
+  // backend url
+  const backendUrl =
+    import.meta.env.VITE_BACKEND_URL || "http://localhost:4000";
 
+  // auth states
   const [user, setUser] = useState(null);
   const [isLoggedIn, setIsLoggedIn] = useState(false);
   const [loading, setLoading] = useState(true);
 
-  // on refresh
+  // check login on page refresh
   useEffect(() => {
     const token = localStorage.getItem("token");
     const userData = localStorage.getItem("user");
 
     if (token && userData) {
-      setIsLoggedIn(true);
       setUser(JSON.parse(userData));
+      setIsLoggedIn(true);
     }
 
     setLoading(false);
   }, []);
 
+  // login user
   const login = async (email, password) => {
     try {
       const res = await axios.post(`${backendUrl}/api/auth/login`, {
@@ -30,19 +34,22 @@ export const AuthProvider = ({ children }) => {
         password,
       });
 
-      if (res.data?.success) {
-        const { token, user } = res.data;
-
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-
-        setUser(user);
-        setIsLoggedIn(true);
-
-        return { success: true };
+      if (!res.data?.success) {
+        return {
+          success: false,
+          message: res.data?.message || "Login failed",
+        };
       }
 
-      return { success: false, message: res.data?.message || "Login failed" };
+      const { token, user } = res.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      setUser(user);
+      setIsLoggedIn(true);
+
+      return { success: true };
     } catch (err) {
       return {
         success: false,
@@ -51,6 +58,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // signup user
   const signup = async (name, email, password) => {
     try {
       const res = await axios.post(`${backendUrl}/api/auth/signup`, {
@@ -59,19 +67,22 @@ export const AuthProvider = ({ children }) => {
         password,
       });
 
-      if (res.data?.success) {
-        const { token, user } = res.data;
-
-        localStorage.setItem("token", token);
-        localStorage.setItem("user", JSON.stringify(user));
-
-        setUser(user);
-        setIsLoggedIn(true);
-
-        return { success: true };
+      if (!res.data?.success) {
+        return {
+          success: false,
+          message: res.data?.message || "Signup failed",
+        };
       }
 
-      return { success: false, message: res.data?.message || "Signup failed" };
+      const { token, user } = res.data;
+
+      localStorage.setItem("token", token);
+      localStorage.setItem("user", JSON.stringify(user));
+
+      setUser(user);
+      setIsLoggedIn(true);
+
+      return { success: true };
     } catch (err) {
       return {
         success: false,
@@ -80,6 +91,7 @@ export const AuthProvider = ({ children }) => {
     }
   };
 
+  // logout user
   const logout = () => {
     localStorage.removeItem("token");
     localStorage.removeItem("user");
@@ -89,7 +101,15 @@ export const AuthProvider = ({ children }) => {
 
   return (
     <AuthContext.Provider
-      value={{ user, isLoggedIn, loading, login, signup, logout, backendUrl }}
+      value={{
+        user,
+        isLoggedIn,
+        loading,
+        login,
+        signup,
+        logout,
+        backendUrl,
+      }}
     >
       {children}
     </AuthContext.Provider>

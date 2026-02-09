@@ -1,5 +1,3 @@
-import React from 'react'
-
 const Title = ({text1, text2}) => {
   return (
     <div className='inline-flex items-center gap-2 mb-3'>

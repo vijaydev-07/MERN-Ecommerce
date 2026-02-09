@@ -1,16 +1,11 @@
 import { useNavigate } from "react-router-dom";
-import { useContext, useEffect, useState } from "react";
+import { useContext } from "react";
 import { ShopContext } from "../context/ShopContext";
 import Title from "./Title";
 
 const LatestCollection = () => {
   const { products } = useContext(ShopContext);
-  const [latestProducts, setLatestProducts] = useState([]);
   const navigate = useNavigate();
-
-  useEffect(() => {
-    setLatestProducts(products.slice(0, 10));
-  }, [products]);
 
   return (
     <div className="my-10 px-3 sm:px-6 md:px-8 max-w-[1200px] mx-auto">
@@ -25,11 +20,10 @@ const LatestCollection = () => {
 
       {/* Products */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
-        {latestProducts.map((item) => (
+        {products.slice(0, 10).map((item) => (
           <div
             key={item._id}
             onClick={() => navigate(`/product/${item._id}`)}
-
             className="cursor-pointer group transition-transform duration-200 hover:scale-[1.04]"
           >
             {/* Image */}
@@ -41,7 +35,7 @@ const LatestCollection = () => {
               />
             </div>
 
-            {/* Name & Price (same look) */}
+            {/* Name & Price */}
             <div className="mt-2 text-center">
               <p className="text-sm font-medium">{item.name}</p>
               <p className="text-sm text-gray-700 mt-1">

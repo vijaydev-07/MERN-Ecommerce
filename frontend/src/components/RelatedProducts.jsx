@@ -1,34 +1,36 @@
-import React, { useContext, useEffect, useState } from 'react'
-import { ShopContext } from '../context/ShopContext'
-import Title from '../components/Title'
-import ProductItem from '../components/ProductItem'
+import { useContext } from "react";
+import { ShopContext } from "../context/ShopContext";
+import Title from "../components/Title";
+import ProductItem from "../components/ProductItem";
 
 const RelatedProducts = ({ category, subCategory, currentProductId }) => {
-  const { products } = useContext(ShopContext)
-  const [related, setRelated] = useState([])
+  // products list context se aa rahi hai
+  const { products } = useContext(ShopContext);
 
-  useEffect(() => {
-    if (products.length > 0) {
-      const filtered = products.filter(
-        (item) =>
-          item.category === category &&
-          item.subCategory === subCategory &&
-          item._id !== currentProductId
-      )
-      setRelated(filtered.slice(0, 6))
-    }
-  }, [products, category, subCategory, currentProductId])
+  // same category + subCategory ke products
+  // current product ko hata diya
+  const related = products
+    .filter(
+      (item) =>
+        item.category === category &&
+        item.subCategory === subCategory &&
+        item._id !== currentProductId
+    )
+    // max 6 products show karne ke liye
+    .slice(0, 6);
 
   return (
     <div className="my-16 px-4">
+      {/* heading */}
       <div className="py-2 text-2xl text-center">
-        <Title text1={'RELATED'} text2={'PRODUCTS'} />
+        <Title text1="RELATED" text2="PRODUCTS" />
       </div>
 
-      {/* IMPORTANT FIX */}
+      {/* products grid */}
       <div className="grid grid-cols-2 gap-4 sm:grid-cols-3 md:grid-cols-4">
         {related.map((item) => (
           <div key={item._id} className="w-full">
+            {/* single product card */}
             <ProductItem
               id={item._id}
               name={item.name}
@@ -40,7 +42,7 @@ const RelatedProducts = ({ category, subCategory, currentProductId }) => {
         ))}
       </div>
     </div>
-  )
-}
+  );
+};
 
-export default RelatedProducts
+export default RelatedProducts;

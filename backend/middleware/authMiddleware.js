@@ -5,25 +5,31 @@ const JWT_SECRET = process.env.JWT_SECRET || "change_this_secret";
 
 const authMiddleware = async (req, res, next) => {
   try {
-    const auth = req.headers.authorization || req.headers.Authorization || "";
-    const token = auth.startsWith("Bearer ") ? auth.split(" ")[1] : auth;
+    // token read
+    const authHeader = req.headers.authorization || "";
+    const token = authHeader.startsWith("Bearer ") ?
+      authHeader.split(" ")[1] :
+      authHeader;
+    // no token
     if (!token) {
       req.user = null;
       return next();
     }
+    // verify token
     const decoded = jwt.verify(token, JWT_SECRET);
     if (!decoded?.id) {
       req.user = null;
       return next();
     }
-    const user = await User.findById(decoded.id);
-    req.user = user ? { _id: user._id, name: user.name, email: user.email } : null;
+    // fetch user
+    const user = await User.findById(decoded.id).select("_id name email");
+    req.user = user || null;
     req.userId = decoded.id;
-    return next();
-  } catch (err) {
-    console.error("Auth middleware error:", err);
+    next();
+  } catch {
+    // invalid token
     req.user = null;
-    return next();
+    next();
   }
 };
 
