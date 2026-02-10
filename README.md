@@ -1,148 +1,202 @@
 # 🛒 MERN E-Commerce Website
 
-Welcome to the **MERN E-Commerce Website**! This project is a feature-rich e-commerce application built using the powerful MERN stack, complete with an intuitive user-facing store and an all-encompassing admin dashboard.
+A full-stack **E-Commerce Web Application** built using the **MERN Stack (MongoDB, Express, React, Node.js)**.
+The project focuses on clean UI, secure authentication, and a scalable architecture — suitable for learning purposes as well as real‑world deployment.
+
+---
+
+## 🚀 Project Overview
+
+This application allows users to:
+
+* 🔐 Register and log in securely
+* 🛍️ Browse products with detailed views
+* 🛒 Add and remove items from the cart
+* 📦 Place orders
+* 👤 View user profile and order history
+
+The project follows a **modular frontend–backend structure**, making it easy to scale, maintain, and extend with new features.
+
+---
 
 ## ✨ Features
 
-### 🌟 User Frontend:
+### 👤 User Features
 
-- **🔒 Secure Authentication**: Register, login, and manage user profiles effortlessly.
-- **🛍️ Product Exploration**: Browse and search through an extensive product catalog with advanced filtering options.
-- **🛒 Shopping Cart**: Add products to your cart, modify quantities, and proceed to a hassle-free checkout.
-- **💳 Seamless Payments**: Make secure payments using Stripe integration.
-- **📦 Order Management**: View order history, track deliveries, and manage returns with ease.
+* JWT-based authentication and authorization
+* Product listing and detailed product pages
+* Shopping cart management
+* Secure order placement
+* User profile with order history
 
-### ⚙️ Admin Dashboard:
+### ⚙️ Backend Features
 
-- **🛠️ Product Management**: Add, update, or delete products with a user-friendly interface.
-- **📂 Category Management**: Organize products into categories for better navigation.
-- **📑 Order Management**: View, process, and update orders efficiently.
-- **👥 User Management**: Manage user roles and access levels.
+* RESTful API architecture
+* Secure authentication using JWT
+* Password hashing with bcrypt
+* MongoDB models for Users, Products, and Orders
+* Middleware-based route protection
+
+---
 
 ## 🛠️ Tech Stack
 
-- **MongoDB**: Robust NoSQL database for storing all application data.
-- **Express.js**: Fast and minimalistic backend framework.
-- **React.js**: Modern frontend library for building dynamic user interfaces.
-- **Node.js**: JavaScript runtime environment for running the backend.
-- **Stripe**: Integrated payment gateway for processing transactions.
-- **JWT**: JSON Web Tokens for secure user sessions.
+### 🎨 Frontend
 
-## 🗂️ Folder Structure
+* **React.js (Vite)** – Fast development and optimized performance
+* **React Router DOM** – Single Page Application navigation
+* **Axios** – API communication
+* **Tailwind CSS** – Responsive and modern UI styling
+* **React Icons** – Icon library
+* **React Toastify** – User notifications
 
-```plaintext
-/
-|-- admin/            # React.js admin frontend code
-|-- backend/          # Node.js backend code (Express.js)
-|-- frontend/         # React.js frontend code
-|-- .gitignore        # Files and folders to be ignored by Git
-|-- README.md         # Project documentation
+### ⚙️ Backend
+
+* **Node.js** – Server-side JavaScript runtime
+* **Express.js** – REST API framework
+* **MongoDB** – NoSQL database
+* **Mongoose** – Schema and model handling
+* **JWT** – Secure authentication
+* **bcrypt** – Password hashing
+* **dotenv** – Environment variable management
+* **CORS** – Cross-origin request handling
+
+---
+
+## 📁 Project Structure
+
+```
+MERN-Ecommerce/
+├── backend/
+├── frontend/
+├── README.md
+└── vercel.json
 ```
 
-## 🤸 Quick Start
+---
 
-Follow these steps to set up the project locally on your machine.
+## ⚙️ Installation & Setup
 
-**Prerequisites**
+### Prerequisites
 
-Make sure you have the following installed on your machine:
+* Node.js
+* MongoDB (local or Atlas)
+* Git
 
-- [Git](https://git-scm.com/)
-- [Node.js](https://nodejs.org/en)
-- [NPM](https://www.npmjs.com/) (Node Package Manager)
+### Clone the Repository
 
-**Cloning the Repository**
-
-```bash
-git clone https://github.com/MenathNDGD/MERN-Ecommerce.git
+```
+git clone https://github.com/vijaydev-07/MERN-Ecommerce.git
+cd MERN-Ecommerce
 ```
 
-**Installation**
+---
 
-Install the project dependencies using npm:
+## 🔧 Setup Instructions
 
-```bash
+### Backend Setup
+
+```
+cd backend
 npm install
 ```
 
-**Set Up Environment Variables**
-
-<details>
-<summary><code>/admin/.env</code></summary>
-
-```env
-VITE_BACKEND_URL = "http://localhost:4000"
-```
-
-</details>
-
-<details>
-<summary><code>/backend/.env</code></summary>
-
-```env
-MONGODB_URI =
-
-CLOUDINARY_API_KEY =
-
-CLOUDINARY_SECRET_KEY =
-
-CLOUDINARY_CLOUD_NAME =
-
-JWT_SECRET =
-
-ADMIN_EMAIL = "admin@trendify.com" #For testing only
-
-ADMIN_PASSWORD = "admin@123" #For testing only
+Create a `.env` file inside the **backend** folder:
 
 ```
-
-</details>
-
-<details>
-<summary><code>/frontend/.env</code></summary>
-
-```env
-VITE_BACKEND_URL = "http://localhost:4000"
+PORT=4000
+MONGO_URI=your_mongodb_connection_string
+JWT_SECRET=your_jwt_secret
 ```
 
-</details>
+Start the backend server:
 
-Replace the placeholder values with your actual Appwrite credentials.
-
-**Running the Project**
-
-**Admin Dashboard Running On:**
-
-```bash
-cd admin
+```
+npm start
 ```
 
-```bash
-npm run dev
+➡ Backend runs on: **[http://localhost:4000](http://localhost:4000)**
+
+---
+
+### Frontend Setup
+
 ```
-
-**Backend Running On:**
-
-```bash
-cd backend
-```
-
-```bash
-npm run server
-```
-
-**Frontend Running On:**
-
-```bash
 cd frontend
-```
-
-```bash
+npm install
 npm run dev
 ```
 
-Open [http://localhost:5174](http://localhost:5174) in your browser to view the admin dashboard.
+➡ Frontend runs on: **[http://localhost:5173](http://localhost:5173)**
 
-Open [http://localhost:400](http://localhost:400) in your browser to run the backend.
+---
 
-Open [http://localhost:5173](http://localhost:5173) in your browser to view the frontend project.
+## 🔐 Authentication Flow
+
+* Passwords are securely hashed using **bcrypt**
+* JWT token is generated on successful login
+* Protected routes are handled using authentication middleware
+* Token is stored on the client side for session management
+
+---
+
+## 📡 API Overview
+
+### 🔑 Auth Routes
+
+```
+POST /api/auth/signup
+POST /api/auth/login
+```
+
+### 📦 Product Routes
+
+```
+GET /api/products
+GET /api/products/:id
+```
+
+### 🛒 Order Routes
+
+```
+POST /api/orders
+GET /api/orders/my-orders
+```
+
+---
+
+## 🚀 Deployment
+
+* **Frontend**: Vercel
+* **Backend**: Render / Railway
+* **Database**: MongoDB Atlas
+
+---
+
+## 📌 Future Enhancements
+
+* Payment gateway integration (Razorpay / Stripe)
+* Admin dashboard for product and order management
+* Product search, filter, and pagination
+* Wishlist functionality
+* Improved UI animations and performance optimization
+
+---
+
+## 🤝 Contributing
+
+Contributions, issues, and feature requests are welcome.
+Feel free to fork the repository and submit a pull request.
+
+---
+
+## 👨‍💻 Author
+
+**Vijay Dev**
+🔗 GitHub: [https://github.com/vijaydev-07](https://github.com/vijaydev-07)
+
+---
+
+## 📄 License
+
+This project is open-source and available under the **MIT License**.
