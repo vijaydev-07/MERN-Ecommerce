@@ -147,19 +147,15 @@ const Product = () => {
       <div className="flex flex-col gap-12 sm:flex-row">
         
         {/* IMAGES */}
-        <div className="flex flex-col-reverse flex-1 gap-3 sm:flex-row">
-          <div className="sm:w-[20%]">
-            <img
-              src={mainImage}
-              onClick={() => setImage(mainImage)}
-              className="cursor-pointer border p-2"
-              alt="Product"
-            />
-          </div>
-          <div className="sm:w-[80%]">
-            <img src={mainImage} className="w-full" alt={product.name} />
-          </div>
-        </div>
+<div className="flex-1 flex justify-center items-start">
+  <div className="w-full max-w-[500px]"> {/* Aap yahan se width control kar sakte hain */}
+    <img 
+      src={mainImage} 
+      className="w-full h-auto object-contain border p-2" 
+      alt={product.name} 
+    />
+  </div>
+</div>
 
         {/* INFO */}
         <div className="flex-1">
