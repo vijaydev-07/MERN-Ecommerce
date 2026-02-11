@@ -18,7 +18,7 @@ const LatestCollection = () => {
         </p>
       </div>
 
-      {/* Products */}
+      {/* Products Grid */}
       <div className="grid grid-cols-2 sm:grid-cols-3 md:grid-cols-4 lg:grid-cols-5 gap-4 sm:gap-6">
         {products.slice(0, 10).map((item) => (
           <div
@@ -27,7 +27,7 @@ const LatestCollection = () => {
             className="cursor-pointer group transition-transform duration-200 hover:scale-[1.04]"
           >
             {/* Image */}
-            <div className="aspect-[3/4] overflow-hidden">
+            <div className="aspect-[3/4] overflow-hidden rounded-sm">
               <img
                 src={item.imageUrl}
                 alt={item.name}
@@ -36,14 +36,26 @@ const LatestCollection = () => {
             </div>
 
             {/* Name & Price */}
-            <div className="mt-2 text-center">
-              <p className="text-sm font-medium">{item.name}</p>
-              <p className="text-sm text-gray-700 mt-1">
+            <div className="mt-3 text-center">
+              <p className="text-[13px] sm:text-sm font-medium text-gray-800 line-clamp-1">
+                {item.name}
+              </p>
+              <p className="text-sm font-bold text-gray-900 mt-1">
                 ₹ {item.price}
               </p>
             </div>
           </div>
         ))}
+      </div>
+
+      {/* VIEW MORE BUTTON */}
+      <div className="flex justify-center mt-12 mb-5">
+        <button
+          onClick={() => navigate("/collection")}
+          className="px-10 py-3 bg-black text-white text-sm font-medium rounded-sm uppercase tracking-widest hover:bg-gray-800 transition-all duration-300 active:scale-95 shadow-md"
+        >
+          View More
+        </button>
       </div>
     </div>
   );

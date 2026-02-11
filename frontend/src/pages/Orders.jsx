@@ -52,40 +52,44 @@ const Orders = () => {
           return (
             <div
               key={idx}
-              className="flex items-center gap-4 px-6 py-5 border rounded-lg bg-white hover:shadow-md transition"
+              // FIX: added 'flex-col md:flex-row' so it stacks on mobile
+              className="flex flex-col md:flex-row md:items-center gap-4 px-6 py-5 border rounded-lg bg-white hover:shadow-md transition"
             >
-              {/* product image */}
-              <img
-                src={img}
-                alt={title}
-                className="w-20 h-20 object-cover rounded"
-              />
+              <div className="flex items-start gap-4 flex-1">
+                {/* product image */}
+                <img
+                  src={img}
+                  alt={title}
+                  className="w-20 h-20 object-cover rounded"
+                />
 
-              {/* product details */}
-              <div className="flex-1">
-                <p className="font-semibold text-gray-800">
-                  {title}
-                </p>
+                {/* product details */}
+                <div className="flex-1">
+                  <p className="font-semibold text-gray-800">
+                    {title}
+                  </p>
 
-                <div className="flex items-center gap-4 mt-2 text-sm text-gray-600">
-                  <span>
-                    {currency}
-                    {price.toLocaleString(undefined, {
-                      minimumFractionDigits: 2,
-                      maximumFractionDigits: 2,
-                    })}
-                  </span>
-                  <span>Quantity: {item.quantity || 1}</span>
-                  <span>Size: {item.size || "-"}</span>
+                  <div className="flex flex-wrap items-center gap-2 md:gap-4 mt-2 text-sm text-gray-600">
+                    <span>
+                      {currency}
+                      {price.toLocaleString(undefined, {
+                        minimumFractionDigits: 2,
+                        maximumFractionDigits: 2,
+                      })}
+                    </span>
+                    <span>Quantity: {item.quantity || 1}</span>
+                    <span>Size: {item.size || "-"}</span>
+                  </div>
+
+                  <p className="text-xs text-gray-400 mt-2">
+                    Date: {orderDate}
+                  </p>
                 </div>
-
-                <p className="text-xs text-gray-400 mt-2">
-                  Date: {orderDate}
-                </p>
               </div>
 
               {/* status + cancel */}
-              <div className="flex flex-col items-end gap-2">
+              {/* FIX: added 'flex-row justify-between md:flex-col md:items-end' */}
+              <div className="flex flex-row justify-between items-center md:flex-col md:items-end gap-2 border-t md:border-none pt-4 md:pt-0">
                 <div className="flex items-center gap-2 text-sm text-green-600">
                   <span className="inline-block w-2 h-2 bg-green-500 rounded-full"></span>
                   <span className="font-medium">
@@ -95,7 +99,7 @@ const Orders = () => {
 
                 <button
                   onClick={() => cancelItem(idx)}
-                  className="px-4 py-2 border border-gray-400 text-sm text-gray-700 rounded hover:bg-gray-50 transition"
+                  className="px-4 py-2 border border-gray-400 text-sm text-gray-700 rounded hover:bg-gray-50 transition whitespace-nowrap"
                 >
                   CANCEL ORDER
                 </button>
