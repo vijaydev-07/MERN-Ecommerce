@@ -141,8 +141,18 @@ const ShopContextProvider = ({ children }) => {
     try {
       const token = localStorage.getItem("token") || "";
       await axios.post(
-        `${backendUrl}/api/order/add`,
-        { items: itemsWithDate },
+  `${backendUrl}/api/order/add`,
+  {
+    order: {
+      items: itemsWithDate,
+      total: itemsWithDate.reduce(
+        (sum, it) => sum + it.price * it.quantity,
+        0
+      ),
+      date: Date.now(),
+    },
+  },
+
         { headers: token ? { Authorization: `Bearer ${token}` } : {} }
       );
     } catch {}

@@ -9,7 +9,7 @@ if (!JWT_SECRET) {
 
 const authMiddleware = async (req, res, next) => {
   try {
-    // token read
+    // token re   
     const authHeader = req.headers.authorization || "";
     const token = authHeader.startsWith("Bearer ") ?
       authHeader.split(" ")[1] :

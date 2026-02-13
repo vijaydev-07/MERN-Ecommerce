@@ -1,10 +1,15 @@
 import express from "express";
-import { addOrder, getUserOrders, cancelOrder } from "../controllers/orderController.js";
+import authMiddleware from "../middleware/authMiddleware.js";
+import {
+    addOrder,
+    getUserOrders,
+    cancelOrder,
+} from "../controllers/orderController.js";
 
 const router = express.Router();
 
-router.post("/add", addOrder);
-router.get("/user", getUserOrders);
-router.patch("/:id/cancel", cancelOrder);
+router.post("/add", authMiddleware, addOrder);
+router.get("/user", authMiddleware, getUserOrders);
+router.patch("/:id/cancel", authMiddleware, cancelOrder);
 
 export default router;
